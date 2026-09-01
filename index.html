@@ -1,0 +1,972 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta name="theme-color" content="#19152c">
+  <title>Our Little World</title>
+  <style>
+    :root {
+      --ink: #22192f;
+      --muted: #746783;
+      --cream: #fff8ed;
+      --pink: #e98ca9;
+      --pink-dark: #bb5c7e;
+      --gold: #f5c76b;
+      --purple: #6554a4;
+      --green: #85bb86;
+      --shadow: 0 18px 45px rgba(46, 29, 60, .25);
+    }
+
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 15% 15%, rgba(255,255,255,.55), transparent 28%),
+        linear-gradient(145deg, #dca4b9 0%, #9188bf 52%, #59538b 100%);
+      font-family: "Trebuchet MS", system-ui, sans-serif;
+      touch-action: none;
+      overflow-x: hidden;
+    }
+
+    button, input { font: inherit; }
+    button { cursor: pointer; }
+
+    .shell {
+      width: min(1100px, 100%);
+      min-height: 100vh;
+      margin: 0 auto;
+      padding: 28px 18px 34px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      margin: 0 auto 18px;
+      color: #fff8f1;
+      text-shadow: 0 2px 0 rgba(54, 37, 75, .35);
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: clamp(28px, 5vw, 46px);
+      letter-spacing: -.04em;
+    }
+
+    .brand p {
+      margin: 4px 0 0;
+      color: rgba(255, 248, 241, .84);
+      font-size: 14px;
+    }
+
+    .heart-mark {
+      display: grid;
+      place-items: center;
+      width: 58px;
+      height: 58px;
+      color: #fff8ed;
+      background: linear-gradient(145deg, #f2a5be, #b95081);
+      border: 3px solid rgba(255,255,255,.6);
+      border-radius: 18px 18px 22px 22px;
+      box-shadow: 0 8px 0 rgba(87, 44, 94, .22);
+      font-size: 30px;
+      transform: rotate(-4deg);
+    }
+
+    .panel {
+      background: rgba(255, 248, 237, .94);
+      border: 2px solid rgba(255,255,255,.72);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+    }
+
+    #lobby {
+      max-width: 650px;
+      margin: 0 auto;
+      padding: clamp(24px, 5vw, 42px);
+    }
+
+    .eyebrow {
+      margin: 0 0 8px;
+      color: var(--pink-dark);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+    }
+
+    #lobby h2 {
+      margin: 0;
+      font-size: clamp(25px, 5vw, 38px);
+      line-height: 1.05;
+    }
+
+    .intro {
+      margin: 14px 0 25px;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    .field-label {
+      display: block;
+      margin: 0 0 7px;
+      color: var(--ink);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    input {
+      width: 100%;
+      min-height: 48px;
+      padding: 0 14px;
+      color: var(--ink);
+      background: #fffdf7;
+      border: 2px solid #e5d8d3;
+      border-radius: 13px;
+      outline: none;
+    }
+
+    input:focus { border-color: var(--pink); box-shadow: 0 0 0 4px rgba(233,140,169,.17); }
+
+    .lobby-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .action {
+      min-height: 53px;
+      padding: 0 16px;
+      color: white;
+      background: var(--purple);
+      border: 0;
+      border-radius: 14px;
+      box-shadow: 0 5px 0 #493b7f;
+      font-weight: 800;
+      transition: transform .12s, filter .12s;
+    }
+
+    .action:hover { filter: brightness(1.07); }
+    .action:active { transform: translateY(4px); box-shadow: 0 1px 0 #493b7f; }
+    .action.secondary { color: var(--ink); background: #f7cf7a; box-shadow: 0 5px 0 #d09c48; }
+    .action:disabled { cursor: wait; opacity: .6; }
+
+    .join-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+    }
+
+    .hint, #lobby-status {
+      min-height: 20px;
+      margin: 18px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    #lobby-status[data-tone="error"] { color: #b34f69; }
+    #lobby-status[data-tone="success"] { color: #478c67; }
+
+    #game-screen { display: none; }
+
+    .game-topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 0 auto 12px;
+      padding: 12px 15px;
+      color: var(--ink);
+      background: rgba(255,248,237,.91);
+      border: 2px solid rgba(255,255,255,.7);
+      border-radius: 17px;
+      box-shadow: 0 9px 25px rgba(46, 29, 60, .16);
+    }
+
+    .connection {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 800;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      background: #ef9b67;
+      border-radius: 50%;
+      box-shadow: 0 0 0 4px rgba(239,155,103,.18);
+    }
+
+    .dot.online { background: #61b87d; box-shadow: 0 0 0 4px rgba(97,184,125,.18); }
+
+    .room-code {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .room-code strong {
+      padding: 5px 8px;
+      color: var(--ink);
+      background: #f8dfba;
+      border-radius: 7px;
+      letter-spacing: .12em;
+    }
+
+    .small-button {
+      min-height: 31px;
+      padding: 0 9px;
+      color: var(--purple);
+      background: transparent;
+      border: 1px solid #c7b9d7;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .game-panel {
+      position: relative;
+      padding: 10px;
+      overflow: hidden;
+      background: #2f2547;
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+    }
+
+    #game {
+      display: block;
+      width: 100%;
+      height: auto;
+      background: #83719a;
+      border: 2px solid #160f25;
+      border-radius: 15px;
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+    }
+
+    .game-caption {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 11px 5px 2px;
+      color: rgba(255,248,237,.84);
+      font-size: 12px;
+    }
+
+    #message {
+      min-height: 18px;
+      color: #ffe5a7;
+      font-weight: 800;
+    }
+
+    #touch-controls {
+      display: none;
+      position: absolute;
+      inset: auto 18px 22px 18px;
+      justify-content: space-between;
+      pointer-events: none;
+    }
+
+    .touch-pad {
+      position: relative;
+      width: 126px;
+      height: 126px;
+      pointer-events: auto;
+    }
+
+    .touch-pad .pad-base {
+      position: absolute;
+      inset: 12px;
+      background: rgba(34,25,47,.5);
+      border: 2px solid rgba(255,248,237,.38);
+      border-radius: 50%;
+    }
+
+    .touch-pad .pad-thumb {
+      position: absolute;
+      left: 41px;
+      top: 41px;
+      width: 44px;
+      height: 44px;
+      background: rgba(245,199,107,.92);
+      border: 2px solid #fff3c8;
+      border-radius: 50%;
+    }
+
+    .touch-help {
+      align-self: end;
+      max-width: 170px;
+      padding: 9px 11px;
+      color: rgba(255,248,237,.88);
+      background: rgba(34,25,47,.58);
+      border-radius: 11px;
+      font-size: 11px;
+      line-height: 1.35;
+      pointer-events: none;
+    }
+
+    @media (pointer: coarse) {
+      #touch-controls { display: flex; }
+      .game-caption { padding-bottom: 2px; }
+    }
+
+    @media (max-width: 560px) {
+      .shell { padding: 18px 10px 22px; }
+      .brand { margin-bottom: 12px; }
+      .heart-mark { width: 47px; height: 47px; font-size: 24px; border-radius: 15px; }
+      .lobby-grid { grid-template-columns: 1fr; }
+      .game-topbar { align-items: flex-start; flex-direction: column; }
+      .room-code { width: 100%; justify-content: space-between; }
+      .game-caption { align-items: flex-start; flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="brand">
+      <div>
+        <h1>Our Little World</h1>
+        <p>A tiny room for two favorite people.</p>
+      </div>
+      <div class="heart-mark" aria-hidden="true">♥</div>
+    </header>
+
+    <section id="lobby" class="panel">
+      <p class="eyebrow">Two-player room</p>
+      <h2>Come home together.</h2>
+      <p class="intro">
+        Create a private room, send the code to your favorite person, and explore the pixel room together.
+        The room creator plays as you; the person who joins plays as your girlfriend.
+      </p>
+
+      <label class="field-label" for="player-name">Your name</label>
+      <input id="player-name" maxlength="18" autocomplete="nickname" value="You">
+
+      <div class="lobby-grid">
+        <button id="create-room" class="action" type="button">Create a room</button>
+        <div>
+          <label class="field-label" for="room-input">Have a room code?</label>
+          <div class="join-row">
+            <input id="room-input" maxlength="6" placeholder="ABC123" autocomplete="off">
+            <button id="join-room" class="action secondary" type="button">Join</button>
+          </div>
+        </div>
+      </div>
+      <p id="lobby-status" role="status">Choose Create a room or enter a code to join.</p>
+      <p class="hint">For the smoothest multiplayer connection, open the published GitHub Pages link on both devices.</p>
+    </section>
+
+    <section id="game-screen">
+      <div class="game-topbar">
+        <div class="connection"><span id="connection-dot" class="dot"></span><span id="connection-label">Waiting for your partner...</span></div>
+        <div class="room-code"><span>Room code</span><strong id="room-code">------</strong><button id="copy-code" class="small-button" type="button">Copy</button></div>
+      </div>
+
+      <div class="game-panel">
+        <canvas id="game" width="960" height="576" aria-label="Our Little World game"></canvas>
+        <div id="touch-controls">
+          <div id="joystick-zone" class="touch-pad">
+            <div class="pad-base"></div>
+            <div id="joystick-thumb" class="pad-thumb"></div>
+          </div>
+          <div class="touch-help">Drag the circle to move<br>WASD / arrow keys also work</div>
+        </div>
+        <div class="game-caption">
+          <span id="role-label">You are playing as You</span>
+          <span id="message">Find your favorite person.</span>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+  <script>
+    const canvas = document.getElementById("game");
+    const ctx = canvas.getContext("2d");
+    ctx.imageSmoothingEnabled = false;
+
+    const TILE = 32;
+    const COLS = 30;
+    const ROWS = 18;
+    const ROOM_CODE_LENGTH = 6;
+    const PEER_PREFIX = "our-little-world-";
+    const SPRITE_COLUMNS = 4;
+    const SPRITE_ROWS = 4;
+    const PLAYER_DRAW_SIZE = 104;
+    const PLAYER_RADIUS = .34;
+    const SPEED = 4.1;
+    const STEP_RATE = 50;
+    const SNAPSHOT_RATE = 50;
+
+    const meImage = new Image();
+    const gfImage = new Image();
+    meImage.src = "assets/me.png";
+    gfImage.src = "assets/gf.png";
+
+    const dom = {
+      lobby: document.getElementById("lobby"),
+      gameScreen: document.getElementById("game-screen"),
+      playerName: document.getElementById("player-name"),
+      roomInput: document.getElementById("room-input"),
+      create: document.getElementById("create-room"),
+      join: document.getElementById("join-room"),
+      lobbyStatus: document.getElementById("lobby-status"),
+      connectionDot: document.getElementById("connection-dot"),
+      connectionLabel: document.getElementById("connection-label"),
+      roomCode: document.getElementById("room-code"),
+      copyCode: document.getElementById("copy-code"),
+      roleLabel: document.getElementById("role-label"),
+      message: document.getElementById("message"),
+      joystickZone: document.getElementById("joystick-zone"),
+      joystickThumb: document.getElementById("joystick-thumb")
+    };
+
+    const state = {
+      peer: null,
+      connection: null,
+      isHost: false,
+      roomCode: "",
+      localId: "me",
+      localName: "You",
+      connected: false,
+      lastMessageAt: 0,
+      lastInputSent: 0,
+      lastSnapshotSent: 0,
+      animationTime: 0,
+      players: {
+        me: { x: 9.2, y: 9.7, dir: "down", moving: false, frame: 0, name: "You" },
+        gf: { x: 20.8, y: 9.7, dir: "down", moving: false, frame: 0, name: "Your GF" }
+      }
+    };
+
+    const hostInputs = {
+      me: { x: 0, y: 0 },
+      gf: { x: 0, y: 0 }
+    };
+
+    const keys = new Set();
+    const joystick = { active: false, x: 0, y: 0, startX: 0, startY: 0 };
+    const JOYSTICK_RADIUS = 42;
+
+    const furniture = [
+      { x: 2.1, y: 3.1, w: 5.7, h: 2.2 },
+      { x: 22.0, y: 3.0, w: 5.7, h: 3.5 },
+      { x: 12.0, y: 7.4, w: 6.0, h: 1.9 },
+      { x: 2.25, y: 12.6, w: 4.8, h: 1.4 },
+      { x: 25.3, y: 12.0, w: 2.1, h: 2.1 },
+      { x: 20.9, y: 12.6, w: 2.8, h: 1.35 }
+    ];
+
+    function setLobbyStatus(text, tone) {
+      dom.lobbyStatus.textContent = text;
+      dom.lobbyStatus.dataset.tone = tone || "";
+    }
+
+    function cleanName(value, fallback) {
+      return (value || "").trim().replace(/\s+/g, " ").slice(0, 18) || fallback;
+    }
+
+    function makeRoomCode() {
+      const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+      let code = "";
+      for (let i = 0; i < ROOM_CODE_LENGTH; i += 1) {
+        code += alphabet[Math.floor(Math.random() * alphabet.length)];
+      }
+      return code;
+    }
+
+    function peerIdFor(code) {
+      return PEER_PREFIX + code.toLowerCase();
+    }
+
+    function switchToGame() {
+      dom.lobby.style.display = "none";
+      dom.gameScreen.style.display = "block";
+      dom.roomCode.textContent = state.roomCode;
+      dom.roleLabel.textContent = state.localId === "me" ? "You are playing as You" : "You are playing as your girlfriend";
+      canvas.focus();
+    }
+
+    function setConnectionStatus(online, label) {
+      state.connected = online;
+      dom.connectionDot.classList.toggle("online", online);
+      dom.connectionLabel.textContent = label;
+    }
+
+    function showGameMessage(text) {
+      dom.message.textContent = text;
+      state.lastMessageAt = performance.now();
+    }
+
+    function startPeer(peer) {
+      state.peer = peer;
+      peer.on("error", error => {
+        const message = error && error.type === "unavailable-id"
+          ? "That room code is already in use. Please create a new room."
+          : "Connection problem. Check the code and try again.";
+        setLobbyStatus(message, "error");
+        dom.create.disabled = false;
+        dom.join.disabled = false;
+      });
+      peer.on("disconnected", () => setConnectionStatus(false, "Connection paused"));
+      peer.on("close", () => setConnectionStatus(false, "Room closed"));
+    }
+
+    function acceptConnection(connection) {
+      if (state.connection && state.connection.open) {
+        connection.close();
+        return;
+      }
+      state.connection = connection;
+      connection.on("open", () => {
+        state.connected = true;
+        setConnectionStatus(true, "Your partner is here");
+        connection.send({ type: "hello", name: state.localName });
+        if (state.isHost) {
+          connection.send({ type: "snapshot", players: state.players });
+        }
+        showGameMessage("You found each other.");
+      });
+      connection.on("data", handleNetworkMessage);
+      connection.on("close", () => {
+        setConnectionStatus(false, "Waiting for your partner...");
+        if (state.isHost) {
+          hostInputs.gf = { x: 0, y: 0 };
+          state.players.gf.moving = false;
+          showGameMessage("Your partner stepped out. Share the code again when ready.");
+        } else {
+          showGameMessage("Your partner disconnected.");
+        }
+      });
+      connection.on("error", () => setConnectionStatus(false, "Connection problem"));
+    }
+
+    function handleNetworkMessage(data) {
+      if (!data || typeof data !== "object") return;
+      if (data.type === "hello" && state.isHost) {
+        state.players.gf.name = cleanName(data.name, "Your GF");
+        sendSnapshot();
+        showGameMessage(state.players.gf.name + " joined the room.");
+      }
+      if (data.type === "input" && state.isHost) {
+        hostInputs.gf = {
+          x: clamp(Number(data.x) || 0, -1, 1),
+          y: clamp(Number(data.y) || 0, -1, 1)
+        };
+      }
+      if (data.type === "snapshot" && !state.isHost && data.players) {
+        for (const id of ["me", "gf"]) {
+          if (data.players[id]) {
+            state.players[id] = { ...state.players[id], ...data.players[id] };
+          }
+        }
+        if (state.players.me.name) state.localName = state.players.gf.name;
+      }
+    }
+
+    function createRoom() {
+      dom.create.disabled = true;
+      dom.join.disabled = true;
+      setLobbyStatus("Creating your private room...", "");
+      state.isHost = true;
+      state.localId = "me";
+      state.localName = cleanName(dom.playerName.value, "You");
+      state.players.me.name = state.localName;
+      state.roomCode = makeRoomCode();
+      const peer = new Peer(peerIdFor(state.roomCode));
+      startPeer(peer);
+      peer.on("open", () => {
+        switchToGame();
+        setConnectionStatus(false, "Waiting for your partner...");
+        showGameMessage("Send the room code to your favorite person.");
+      });
+      peer.on("connection", acceptConnection);
+    }
+
+    function joinRoom() {
+      const code = dom.roomInput.value.trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
+      if (code.length !== ROOM_CODE_LENGTH) {
+        setLobbyStatus("Enter the six-character room code first.", "error");
+        return;
+      }
+      dom.create.disabled = true;
+      dom.join.disabled = true;
+      setLobbyStatus("Joining room " + code + "...", "");
+      state.isHost = false;
+      state.localId = "gf";
+      state.localName = cleanName(dom.playerName.value, "Your GF");
+      state.roomCode = code;
+      state.players.gf.name = state.localName;
+      const peer = new Peer();
+      startPeer(peer);
+      peer.on("open", () => {
+        const connection = peer.connect(peerIdFor(code), { reliable: true });
+        acceptConnection(connection);
+        connection.on("open", () => {
+          switchToGame();
+          setConnectionStatus(true, "Connected to your partner");
+          showGameMessage("You joined the room.");
+        });
+      });
+    }
+
+    function sendSnapshot() {
+      if (!state.connection || !state.connection.open) return;
+      state.connection.send({
+        type: "snapshot",
+        players: {
+          me: { ...state.players.me },
+          gf: { ...state.players.gf }
+        }
+      });
+    }
+
+    function clamp(value, min, max) {
+      return Math.max(min, Math.min(max, value));
+    }
+
+    function getLocalInput() {
+      let x = 0;
+      let y = 0;
+      if (keys.has("arrowleft") || keys.has("a")) x -= 1;
+      if (keys.has("arrowright") || keys.has("d")) x += 1;
+      if (keys.has("arrowup") || keys.has("w")) y -= 1;
+      if (keys.has("arrowdown") || keys.has("s")) y += 1;
+      if (joystick.active) {
+        x += joystick.x;
+        y += joystick.y;
+      }
+      const length = Math.hypot(x, y);
+      return length > 1 ? { x: x / length, y: y / length } : { x, y };
+    }
+
+    function canStand(x, y) {
+      if (x < 1.35 || x > COLS - 1.35 || y < 2.25 || y > ROWS - 1.2) return false;
+      return !furniture.some(rect =>
+        x + PLAYER_RADIUS > rect.x &&
+        x - PLAYER_RADIUS < rect.x + rect.w &&
+        y + PLAYER_RADIUS > rect.y &&
+        y - PLAYER_RADIUS < rect.y + rect.h
+      );
+    }
+
+    function movePlayer(player, input, dt) {
+      const length = Math.hypot(input.x, input.y);
+      if (length < .05) {
+        player.moving = false;
+        return;
+      }
+      const x = input.x / Math.max(1, length);
+      const y = input.y / Math.max(1, length);
+      const nextX = player.x + x * SPEED * dt;
+      const nextY = player.y + y * SPEED * dt;
+      if (canStand(nextX, player.y)) player.x = nextX;
+      if (canStand(player.x, nextY)) player.y = nextY;
+      player.moving = true;
+      if (Math.abs(x) > Math.abs(y)) player.dir = x < 0 ? "left" : "right";
+      else player.dir = y < 0 ? "up" : "down";
+    }
+
+    function updateHost(dt) {
+      movePlayer(state.players.me, hostInputs.me, dt);
+      movePlayer(state.players.gf, hostInputs.gf, dt);
+      for (const player of Object.values(state.players)) {
+        player.frame = player.moving ? Math.floor(state.animationTime * 9) % 4 : 0;
+      }
+    }
+
+    function updateGuestInput(now) {
+      if (!state.connection || !state.connection.open || now - state.lastInputSent < STEP_RATE) return;
+      const input = getLocalInput();
+      state.connection.send({ type: "input", x: input.x, y: input.y });
+      state.lastInputSent = now;
+    }
+
+    function update(now, dt) {
+      state.animationTime += dt;
+      const input = getLocalInput();
+      if (state.isHost) {
+        hostInputs.me = input;
+        updateHost(dt);
+        if (state.connected && now - state.lastSnapshotSent >= SNAPSHOT_RATE) {
+          sendSnapshot();
+          state.lastSnapshotSent = now;
+        }
+      } else {
+        updateGuestInput(now);
+        const local = state.players.gf;
+        if (Math.hypot(input.x, input.y) > .05) {
+          local.moving = true;
+          local.frame = Math.floor(state.animationTime * 9) % 4;
+          if (Math.abs(input.x) > Math.abs(input.y)) local.dir = input.x < 0 ? "left" : "right";
+          else local.dir = input.y < 0 ? "up" : "down";
+        } else {
+          local.moving = false;
+          local.frame = 0;
+        }
+      }
+      const distance = Math.hypot(state.players.me.x - state.players.gf.x, state.players.me.y - state.players.gf.y);
+      if (distance < 1.45) {
+        dom.message.textContent = "♥ Together is home.";
+      } else if (performance.now() - state.lastMessageAt > 3500) {
+        dom.message.textContent = "Find your favorite person.";
+      }
+    }
+
+    function drawPixelRect(x, y, width, height, color) {
+      ctx.fillStyle = color;
+      ctx.fillRect(Math.round(x), Math.round(y), Math.round(width), Math.round(height));
+    }
+
+    function drawFloor() {
+      drawPixelRect(0, 0, canvas.width, canvas.height, "#302743");
+      for (let y = 1; y < ROWS - 1; y += 1) {
+        for (let x = 1; x < COLS - 1; x += 1) {
+          const color = (x + y) % 2 ? "#a77d6d" : "#ad8270";
+          drawPixelRect(x * TILE, y * TILE, TILE, TILE, color);
+          drawPixelRect(x * TILE, y * TILE, TILE, 2, "rgba(72,47,66,.12)");
+        }
+      }
+      drawPixelRect(TILE, TILE, (COLS - 2) * TILE, TILE, "#66506f");
+      drawPixelRect(TILE, TILE * 2, TILE, (ROWS - 3) * TILE, "#66506f");
+      drawPixelRect((COLS - 2) * TILE, TILE * 2, TILE, (ROWS - 3) * TILE, "#66506f");
+      drawPixelRect(TILE, (ROWS - 2) * TILE, (COLS - 2) * TILE, TILE, "#66506f");
+      for (let x = 1; x < COLS - 1; x += 1) {
+        drawPixelRect(x * TILE + 4, TILE + 7, TILE - 8, 4, "#806476");
+      }
+      drawPixelRect(1.4 * TILE, 2.15 * TILE, 3.7 * TILE, 2, "#d6a087");
+      drawPixelRect(25.3 * TILE, 2.15 * TILE, 2.9 * TILE, 2, "#d6a087");
+    }
+
+    function drawRug() {
+      drawPixelRect(9 * TILE, 10.7 * TILE, 12 * TILE, 3.8 * TILE, "#d58b8d");
+      drawPixelRect(9.3 * TILE, 11 * TILE, 11.4 * TILE, 3.2 * TILE, "#f2c3a5");
+      drawPixelRect(9.7 * TILE, 11.35 * TILE, 10.6 * TILE, 2.5 * TILE, "#d9969f");
+      drawPixelRect(14.3 * TILE, 11.55 * TILE, 1.4 * TILE, 1.2 * TILE, "#f5d2ae");
+      drawPixelRect(13.9 * TILE, 11.95 * TILE, 2.2 * TILE, .4 * TILE, "#f5d2ae");
+    }
+
+    function drawSofa() {
+      drawPixelRect(2.15 * TILE, 3.15 * TILE, 5.6 * TILE, 2.1 * TILE, "#6c527d");
+      drawPixelRect(2.45 * TILE, 2.8 * TILE, 5.0 * TILE, 1.15 * TILE, "#86658b");
+      drawPixelRect(2.55 * TILE, 3.45 * TILE, 4.8 * TILE, 1.45 * TILE, "#997395");
+      drawPixelRect(2.35 * TILE, 4.95 * TILE, .55 * TILE, .5 * TILE, "#3d2c51");
+      drawPixelRect(7.0 * TILE, 4.95 * TILE, .55 * TILE, .5 * TILE, "#3d2c51");
+      drawPixelRect(2.75 * TILE, 3.4 * TILE, .95 * TILE, .8 * TILE, "#d79a9c");
+      drawPixelRect(6.15 * TILE, 3.4 * TILE, .95 * TILE, .8 * TILE, "#d79a9c");
+    }
+
+    function drawBed() {
+      drawPixelRect(22.0 * TILE, 3.0 * TILE, 5.65 * TILE, 3.45 * TILE, "#674a69");
+      drawPixelRect(22.45 * TILE, 3.35 * TILE, 4.75 * TILE, 2.7 * TILE, "#e8b4ad");
+      drawPixelRect(22.45 * TILE, 3.35 * TILE, 4.75 * TILE, 1.0 * TILE, "#f8dcc1");
+      drawPixelRect(22.65 * TILE, 3.55 * TILE, 1.45 * TILE, .65 * TILE, "#fff1d5");
+      drawPixelRect(26.7 * TILE, 2.65 * TILE, .6 * TILE, 3.8 * TILE, "#463352");
+      drawPixelRect(22.1 * TILE, 6.25 * TILE, 5.45 * TILE, .45 * TILE, "#493451");
+    }
+
+    function drawTable() {
+      drawPixelRect(12.0 * TILE, 7.35 * TILE, 6.0 * TILE, 1.8 * TILE, "#754f4e");
+      drawPixelRect(12.35 * TILE, 7.65 * TILE, 5.3 * TILE, 1.2 * TILE, "#b87864");
+      drawPixelRect(12.45 * TILE, 9.0 * TILE, .5 * TILE, 1.35 * TILE, "#553b4a");
+      drawPixelRect(17.05 * TILE, 9.0 * TILE, .5 * TILE, 1.35 * TILE, "#553b4a");
+      drawPixelRect(14.2 * TILE, 7.8 * TILE, 1.55 * TILE, .35 * TILE, "#f4d28f");
+      drawPixelRect(14.8 * TILE, 7.4 * TILE, .35 * TILE, .4 * TILE, "#6b9f7b");
+      drawPixelRect(15.75 * TILE, 7.75 * TILE, .35 * TILE, .45 * TILE, "#6b9f7b");
+    }
+
+    function drawBookshelf() {
+      drawPixelRect(2.2 * TILE, 12.45 * TILE, 5.0 * TILE, 1.65 * TILE, "#573c55");
+      drawPixelRect(2.5 * TILE, 12.7 * TILE, 4.4 * TILE, .32 * TILE, "#9b6a60");
+      drawPixelRect(2.5 * TILE, 13.45 * TILE, 4.4 * TILE, .32 * TILE, "#9b6a60");
+      const books = ["#dd8b8d", "#8296bb", "#e7bd73", "#7aaa8c", "#c479a0", "#e4a069"];
+      books.forEach((color, index) => {
+        drawPixelRect((2.7 + index * .62) * TILE, 12.85 * TILE, .38 * TILE, .52 * TILE, color);
+        drawPixelRect((2.7 + index * .62) * TILE, 13.6 * TILE, .38 * TILE, .52 * TILE, books[(index + 2) % books.length]);
+      });
+    }
+
+    function drawWindow() {
+      drawPixelRect(10.1 * TILE, 2.0 * TILE, 7.2 * TILE, .28 * TILE, "#3f3154");
+      drawPixelRect(10.4 * TILE, 2.28 * TILE, 6.6 * TILE, 3.0 * TILE, "#463658");
+      drawPixelRect(10.75 * TILE, 2.6 * TILE, 5.9 * TILE, 2.35 * TILE, "#9dc4cb");
+      drawPixelRect(13.6 * TILE, 2.6 * TILE, .3 * TILE, 2.35 * TILE, "#f5d39f");
+      drawPixelRect(10.75 * TILE, 3.7 * TILE, 5.9 * TILE, .3 * TILE, "#f5d39f");
+      drawPixelRect(11.1 * TILE, 2.75 * TILE, .75 * TILE, .6 * TILE, "rgba(255,244,193,.8)");
+      drawPixelRect(15.25 * TILE, 4.2 * TILE, 1.0 * TILE, .42 * TILE, "rgba(255,244,193,.65)");
+      drawPixelRect(9.85 * TILE, 4.9 * TILE, 7.7 * TILE, .36 * TILE, "#523952");
+    }
+
+    function drawPlant() {
+      drawPixelRect(25.55 * TILE, 13.0 * TILE, 1.6 * TILE, 1.15 * TILE, "#9b5f5e");
+      drawPixelRect(25.85 * TILE, 11.75 * TILE, .28 * TILE, 1.4 * TILE, "#54775e");
+      drawPixelRect(25.2 * TILE, 11.75 * TILE, .85 * TILE, .38 * TILE, "#6d9e6e");
+      drawPixelRect(26.1 * TILE, 11.2 * TILE, .85 * TILE, .42 * TILE, "#76aa72");
+      drawPixelRect(26.4 * TILE, 12.35 * TILE, .7 * TILE, .35 * TILE, "#6d9e6e");
+    }
+
+    function drawSmallDecor() {
+      drawPixelRect(20.85 * TILE, 12.55 * TILE, 2.95 * TILE, 1.45 * TILE, "#75605f");
+      drawPixelRect(21.2 * TILE, 12.8 * TILE, 2.25 * TILE, .9 * TILE, "#b68170");
+      drawPixelRect(21.45 * TILE, 12.98 * TILE, 1.75 * TILE, .5 * TILE, "#f2d5ad");
+      drawPixelRect(21.65 * TILE, 13.12 * TILE, .45 * TILE, .18 * TILE, "#d87987");
+      drawPixelRect(22.35 * TILE, 13.12 * TILE, .45 * TILE, .18 * TILE, "#d87987");
+    }
+
+    function drawHeart(x, y, scale) {
+      const px = x * TILE;
+      const py = y * TILE;
+      ctx.save();
+      ctx.translate(px, py);
+      ctx.scale(scale, scale);
+      ctx.fillStyle = "#ffedf0";
+      ctx.fillRect(-4, -3, 8, 8);
+      ctx.fillRect(-7, 0, 14, 5);
+      ctx.fillRect(-4, 5, 8, 4);
+      ctx.fillRect(-2, 9, 4, 3);
+      ctx.fillStyle = "#ec82a1";
+      ctx.fillRect(-5, -5, 4, 4);
+      ctx.fillRect(1, -5, 4, 4);
+      ctx.restore();
+    }
+
+    function drawPlayer(id, player) {
+      const image = id === "me" ? meImage : gfImage;
+      const rowByDirection = { down: 0, up: 1, left: 2, right: 3 };
+      const row = rowByDirection[player.dir] || 0;
+      const frame = player.moving ? player.frame % 4 : 0;
+      const px = player.x * TILE;
+      const py = player.y * TILE;
+      if (image.complete && image.naturalWidth) {
+        const sourceWidth = image.naturalWidth / SPRITE_COLUMNS;
+        const sourceHeight = image.naturalHeight / SPRITE_ROWS;
+        ctx.drawImage(
+          image,
+          frame * sourceWidth, row * sourceHeight, sourceWidth, sourceHeight,
+          px - PLAYER_DRAW_SIZE / 2, py - PLAYER_DRAW_SIZE + 15,
+          PLAYER_DRAW_SIZE, PLAYER_DRAW_SIZE
+        );
+      } else {
+        ctx.fillStyle = id === "me" ? "#64795c" : "#e9a7ae";
+        ctx.fillRect(px - 12, py - 34, 24, 32);
+      }
+      ctx.font = "bold 11px Trebuchet MS, sans-serif";
+      ctx.textAlign = "center";
+      const label = player.name || (id === "me" ? "You" : "Your GF");
+      const labelWidth = ctx.measureText(label).width + 12;
+      ctx.fillStyle = "rgba(34,25,47,.75)";
+      ctx.fillRect(px - labelWidth / 2, py - 55, labelWidth, 17);
+      ctx.fillStyle = "#fff8ed";
+      ctx.fillText(label, px, py - 43);
+    }
+
+    function draw() {
+      drawFloor();
+      drawWindow();
+      drawRug();
+      drawSofa();
+      drawBed();
+      drawTable();
+      drawBookshelf();
+      drawPlant();
+      drawSmallDecor();
+      const distance = Math.hypot(state.players.me.x - state.players.gf.x, state.players.me.y - state.players.gf.y);
+      const players = Object.entries(state.players).sort(([, first], [, second]) => first.y - second.y);
+      if (distance < 1.45) {
+        const pulse = 1 + Math.sin(state.animationTime * 5) * .12;
+        drawHeart((state.players.me.x + state.players.gf.x) / 2, Math.min(state.players.me.y, state.players.gf.y) - 1.7, pulse);
+      }
+      players.forEach(([id, player]) => drawPlayer(id, player));
+    }
+
+    function loop(now) {
+      const dt = Math.min((now - (loop.last || now)) / 1000, .05);
+      loop.last = now;
+      update(now, dt);
+      draw();
+      requestAnimationFrame(loop);
+    }
+
+    function beginJoystick(clientX, clientY) {
+      const rect = dom.joystickZone.getBoundingClientRect();
+      joystick.active = true;
+      joystick.startX = rect.left + rect.width / 2;
+      joystick.startY = rect.top + rect.height / 2;
+      moveJoystick(clientX, clientY);
+    }
+
+    function moveJoystick(clientX, clientY) {
+      if (!joystick.active) return;
+      const dx = clientX - joystick.startX;
+      const dy = clientY - joystick.startY;
+      const distance = Math.min(Math.hypot(dx, dy), JOYSTICK_RADIUS);
+      const angle = Math.atan2(dy, dx);
+      const tx = Math.cos(angle) * distance;
+      const ty = Math.sin(angle) * distance;
+      joystick.x = tx / JOYSTICK_RADIUS;
+      joystick.y = ty / JOYSTICK_RADIUS;
+      dom.joystickThumb.style.left = (41 + tx) + "px";
+      dom.joystickThumb.style.top = (41 + ty) + "px";
+    }
+
+    function endJoystick() {
+      joystick.active = false;
+      joystick.x = 0;
+      joystick.y = 0;
+      dom.joystickThumb.style.left = "41px";
+      dom.joystickThumb.style.top = "41px";
+    }
+
+    window.addEventListener("keydown", event => {
+      const key = event.key.toLowerCase();
+      if (["arrowup", "arrowdown", "arrowleft", "arrowright", "w", "a", "s", "d"].includes(key)) {
+        event.preventDefault();
+        keys.add(key);
+      }
+    });
+    window.addEventListener("keyup", event => keys.delete(event.key.toLowerCase()));
+    window.addEventListener("blur", () => keys.clear());
+
+    dom.joystickZone.addEventListener("pointerdown", event => {
+      event.preventDefault();
+      dom.joystickZone.setPointerCapture(event.pointerId);
+      beginJoystick(event.clientX, event.clientY);
+    });
+    dom.joystickZone.addEventListener("pointermove", event => moveJoystick(event.clientX, event.clientY));
+    dom.joystickZone.addEventListener("pointerup", endJoystick);
+    dom.joystickZone.addEventListener("pointercancel", endJoystick);
+
+    dom.create.addEventListener("click", createRoom);
+    dom.join.addEventListener("click", joinRoom);
+    dom.roomInput.addEventListener("input", () => {
+      dom.roomInput.value = dom.roomInput.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, ROOM_CODE_LENGTH);
+    });
+    dom.roomInput.addEventListener("keydown", event => {
+      if (event.key === "Enter") joinRoom();
+    });
+    dom.copyCode.addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(state.roomCode);
+        dom.copyCode.textContent = "Copied";
+        setTimeout(() => { dom.copyCode.textContent = "Copy"; }, 1300);
+      } catch {
+        showGameMessage("Your room code is " + state.roomCode);
+      }
+    });
+
+    requestAnimationFrame(loop);
+  </script>
+</body>
+</html>
